@@ -1,18 +1,22 @@
 import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet, StatusBar} from 'react-native';
 import SimpleButton from './SimpleButton';
+import NoteList from './NoteList';
 
 export default class HomeScreen extends React.Component{
   render(){
     return (
       <View style={styles.container}>
-        <Text style={styles.noNotesText}>You haven't created any notes!</Text>
-        <SimpleButton
-          customText="Create Note"
-          onPress={() => {this.props.navigator.push({name: 'createNote'})}}
-          style={styles.simpleButton}
-          textStyle={styles.simpleButtonText}
-         />
+        <NoteList />
+        <View style={styles.buttonContainer}>
+          <Text style={styles.noNotesText}>You haven't created any notes!</Text>
+          <SimpleButton
+            customText="Create Note"
+            onPress={() => {this.props.navigator.push({name: 'createNote'})}}
+            style={styles.simpleButton}
+            textStyle={styles.simpleButtonText}
+           />
+        </View>
       </View>
       );
   }
@@ -21,15 +25,19 @@ export default class HomeScreen extends React.Component{
 var styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
+    marginTop: 60
+  },
+
+  buttonContainer: {
+    flex: 1,
     justifyContent: 'center',
+    alignItems: 'center',
   },
 
   noNotesText: {
     color: '#48209A',
     marginBottom: 10
   },
-
   simpleButton: {
     backgroundColor: '#5B29C1',
     borderColor: '#48209A',
@@ -39,13 +47,12 @@ var styles = StyleSheet.create({
     paddingVertical: 15,
     shadowColor: 'darkgrey',
     shadowOffset: {
-      width: 1,
-      height: 1
+        width: 1,
+        height: 1
     },
     shadowOpacity: 0.8,
     shadowRadius: 1,
   },
-
   simpleButtonText: {
     color: 'white',
     fontWeight: 'bold',

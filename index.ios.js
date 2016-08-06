@@ -21,7 +21,11 @@ var NavigationBarRouteMapper = {
     switch(route.name){
       case 'createNote':
         return (
-          <SimpleButton onPress={() => {navigator.pop()}} customText='Back' />
+          <SimpleButton
+            onPress={() => {navigator.pop()}} customText='Back'
+            style={styles.navBarLeftButton}
+            textStyle={styles.navBarButtonText}
+            />
           );
         default: return null;
     }
@@ -31,7 +35,10 @@ var NavigationBarRouteMapper = {
     switch(route.name){
       case 'home':
         return (
-          <SimpleButton onPress={() => {navigator.push({name: 'createNote'})}} customText='Create Note'/>
+          <SimpleButton
+            onPress={() => {navigator.push({name: 'createNote'})}} customText='Create Note'
+            style={styles.navBarRightButton}
+            textStyle={styles.navBarButtonText}/>
           );
       default: return null;
     }
@@ -41,11 +48,11 @@ var NavigationBarRouteMapper = {
     switch(route.name){
       case 'home':
         return (
-          <Text>React Notes</Text>
+          <Text style={styles.navBarTitleText}>React Notes</Text>
           );
       case 'createNote':
         return (
-          <Text>Create Note</Text>
+          <Text style={styles.navBarTitleText}>Create Note</Text>
           );
     }
   },
@@ -73,6 +80,7 @@ class ReactNotes extends Component {
         navigationBar={
           <Navigator.NavigationBar
             routeMapper={NavigationBarRouteMapper}
+            style={styles.navBar}
           />
         }
        />
@@ -86,6 +94,33 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
+  },
+  navContainer: {
+    flex: 1,
+  },
+  navBar: {
+    backgroundColor: '#5B29C1',
+    borderBottomColor: '#48209A',
+    borderBottomWidth: 1
+  },
+  navBarTitleText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '500',
+    marginVertical: 9  // iOS
+  // marginVertical: 16 // Android
+  },
+  navBarLeftButton: {
+    paddingLeft: 10
+  },
+  navBarRightButton: {
+    paddingRight: 10
+  },
+  navBarButtonText: {
+    color: '#EEE',
+    fontSize: 16,
+    marginVertical: 10 // iOS
+  // marginVertical: 16 // Android
   }
 });
 

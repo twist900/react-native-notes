@@ -6,6 +6,17 @@ import {
 } from 'react-native';
 
 export default class NoteScreen extends React.Component{
+  constructor(props){
+    super(props);
+    this.state = {note: Object.assign({}, props.note)}
+  }
+
+  updateNote(title, body){
+    let note =  Object.assign(this.state.note, {title: title, body: body});
+    this.props.onChangeNote(note);
+    this.setState(note);
+  }
+
   render(){
     return (
       <View style={styles.container}>
@@ -16,6 +27,8 @@ export default class NoteScreen extends React.Component{
             placeholder="Untitled"
             style={[styles.textInput, styles.title]}
             onEndEditing={(text) => {this.refs.body.focus()}}
+            value={this.state.note.title}
+            onChangeText={(title) => this.updateNote(title, this.state.note.body)}
             />
         </View>
         <View style={styles.inputContainer}>
@@ -24,6 +37,8 @@ export default class NoteScreen extends React.Component{
             multiline={true}
             placeholder="Start typing"
             style={[styles.textInput, styles.body]}
+            value={this.state.note.body}
+            onChangeText={(body) => this.updateNote(this.state.note.title, body)}
             />
         </View>
       </View>

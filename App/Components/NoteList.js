@@ -10,33 +10,16 @@ export default class NoteList extends React.Component{
   constructor(props){
     super(props);
     this.ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2 });
-
-    this.state = {
-      dataSource: this.ds.cloneWithRows([
-            {title: "Note 1", body: "Body 1", id: 1},
-            {title: "Note 2", body: "Body 2", id: 2}
-          ])
-    };
-  }
-
-  _renderSeparator(sectionID: number, rowID: number, adjacentRowHighlighted: bool) {
-    return (
-      <View
-        key={`${sectionID}-${rowID}`}
-        style={{
-          height: adjacentRowHighlighted ? 4 : 1,
-          backgroundColor: adjacentRowHighlighted ? '#3B5998' : '#CCCCCC',
-        }}
-      />
-    );
   }
 
   _renderRow(rowData){
     return(
-      <TouchableHighlight onPress={() => console.log(rowData.title)}>
-        <View style={styles.row}>
-          <Text style={styles.text}>{rowData.title}</Text>
-        </View>
+      <TouchableHighlight
+        onPress={() => this.props.onSelectNote(rowData)}
+        style={styles.rowStyle}
+        underlayColor="#9E7CE3"
+        >
+        <Text style={styles.rowText}>{rowData.title}</Text>
       </TouchableHighlight>
       );
   }
@@ -44,23 +27,20 @@ export default class NoteList extends React.Component{
   render(){
     return(
       <ListView
-        dataSource={this.state.dataSource}
-        renderRow={this._renderRow}
-        renderSeparator={this._renderSeparator}
+        dataSource={this.ds.cloneWithRows(this.props.notes)}
+        renderRow={this._renderRow.bind(this)}
       />
       );
   }
 }
 
 var styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    padding: 10,
-    backgroundColor: '#F6F6F6',
+  rowStyle: {
+    borderBottomColor: '#9E7CE3',
+    borderBottomWidth: 1,
+    padding: 20,
   },
-
-  text: {
-    flex: 1,
-  },
+  rowText: {
+    fontWeight: '600'
+  }
 });

@@ -10,11 +10,13 @@ import {
   StyleSheet,
   Text,
   View,
-  Navigator
+  Navigator,
+  AsyncStorage,
 } from 'react-native';
 import SimpleButton from './App/Components/SimpleButton';
 import NoteScreen from './App/Components/NoteScreen';
 import HomeScreen from './App/Components/HomeScreen';
+import _ from 'lodash';
 
 var NavigationBarRouteMapper = {
   LeftButton: function(route, navigator, index, navState){
@@ -36,10 +38,36 @@ var NavigationBarRouteMapper = {
       case 'home':
         return (
           <SimpleButton
-            onPress={() => {navigator.push({name: 'createNote'})}} customText='Create Note'
+            onPress={() => {navigator.push({
+              name: 'createNote',
+              passProps: {
+                note: {
+                  id: new Date().getTime(),
+                  title: '',
+                  body: '',
+                }
+              }
+            })}}
+            customText='Create Note'
             style={styles.navBarRightButton}
             textStyle={styles.navBarButtonText}/>
           );
+      case 'createNote':
+        if(route.passProps){
+          return ( <SimpleButton
+            onPress={
+              () => {
+                navigator.props.onDeleteNote(route.passProps.note);
+                navigator.pop();
+              }
+            }
+            customText='Delete'
+            style={styles.navBarRightButton}
+            textStyle={styles.navBarButtonText}
+          /> );
+        } else {
+          return null;
+        }
       default: return null;
     }
   },
@@ -52,21 +80,82 @@ var NavigationBarRouteMapper = {
           );
       case 'createNote':
         return (
-          <Text style={styles.navBarTitleText}>Create Note</Text>
+          <Text style={styles.navBarTitleText}>{route.passProps ? route.passProps.note.title : 'Create Note'}</Text>
           );
     }
   },
 }
 class ReactNotes extends Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      selectedNote: {title: '', body: ''},
+      notes: {
+        1: {title: "Note 1", body: "Body 1", id: 1},
+        2: {title: "Note 2", body: "Body 2", id: 2}
+      }
+    };
+    this.loadNotes();
+  }
+
+  async saveNotes(notes){
+    try{
+      await AsyncStorage.setItem("@ReactNotes:notes", JSON.stringify(notes));
+    }catch(error){
+      console.log('AsyncStorage error: ' + error.message);
+    }
+  }
+
+  async loadNotes(){
+    try{
+      var notes = await AsyncStorage.getItem('@ReactNotes:notes');
+      if(notes !== null){
+        this.setState({notes: JSON.parse(notes)});
+      }
+    }catch(error){
+      console.log('AsyncStorage error: ' + error.message);
+    }
+  }
+
+  updateNote(note){
+    let newNotes = Object.assign({}, this.state.notes);
+    note.isSaved = true;
+    newNotes[note.id] = note;
+    this.setState({notes: newNotes});
+    this.saveNotes(newNotes);
+  }
+
+  deleteNote(note){
+    let newNotes = Object.assign({}, this.state.notes);
+    delete newNotes[note.id];
+    this.setState({notes: newNotes});
+    this.saveNotes(newNotes);
+  }
+
   renderScene(route, navigator){
     switch (route.name) {
       case 'home':
         return (
-          <HomeScreen navigator={navigator}/>
+          <HomeScreen
+            navigator={navigator}
+            notes={_.values(this.state.notes)}
+            onSelectNote={(note) => navigator.push({
+                name: 'createNote',
+                passProps: {
+                  note: {
+                    id: note.id,
+                    title: note.title,
+                    body: note.body,
+                }
+              },
+            })}
+            />
       );
       case 'createNote':
        return (
-         <NoteScreen />
+         <NoteScreen {...route.passProps}
+            onChangeNote={(note) => { this.updateNote(note)}}
+          />
       );
     }
 
@@ -76,13 +165,14 @@ class ReactNotes extends Component {
     return (
       <Navigator
         initialRoute={{name: 'home'}}
-        renderScene={this.renderScene}
+        renderScene={this.renderScene.bind(this)}
         navigationBar={
           <Navigator.NavigationBar
             routeMapper={NavigationBarRouteMapper}
             style={styles.navBar}
           />
         }
+        onDeleteNote={(note) => { this.deleteNote(note)}}
        />
     );
   }

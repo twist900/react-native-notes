@@ -16,18 +16,40 @@ import {
 import SimpleButton from './App/Components/SimpleButton';
 import NoteScreen from './App/Components/NoteScreen';
 import HomeScreen from './App/Components/HomeScreen';
+import NoteLocationScreen from './App/Components/NoteLocationScreen';
 import _ from 'lodash';
 
 var NavigationBarRouteMapper = {
   LeftButton: function(route, navigator, index, navState){
     switch(route.name){
+      case 'home':
+        return (
+          <SimpleButton
+            onPress={() => {navigator.push({
+              name: 'noteLocations'
+            })}}
+            customText='Map'
+            style={styles.navBarLeftButton}
+            textStyle={styles.navBarButtonText}
+          />
+          );
       case 'createNote':
         return (
           <SimpleButton
-            onPress={() => {navigator.pop()}} customText='Back'
+            onPress={() => {navigator.pop()}}
+            customText='Back'
             style={styles.navBarLeftButton}
             textStyle={styles.navBarButtonText}
             />
+          );
+      case 'noteLocations':
+        return (
+          <SimpleButton
+            onPress = {() => navigator.pop()}
+            customText = 'Back'
+            style={styles.navBarLeftButton}
+            textStyle={styles.navBarButtonText}
+          />
           );
         default: return null;
     }
@@ -82,6 +104,10 @@ var NavigationBarRouteMapper = {
         return (
           <Text style={styles.navBarTitleText}>{route.passProps ? route.passProps.note.title : 'Create Note'}</Text>
           );
+      case 'noteLocations':
+        return (
+          <Text style={styles.navBarTitleText}>Note Locations</Text>
+          );
     }
   },
 }
@@ -91,11 +117,47 @@ class ReactNotes extends Component {
     this.state = {
       selectedNote: {title: '', body: ''},
       notes: {
-        1: {title: "Note 1", body: "Body 1", id: 1},
-        2: {title: "Note 2", body: "Body 2", id: 2}
+        1: {
+          title: "Note 1",
+          body: "Body 1",
+          id: 1,
+          location: {
+            coords: {
+              latitude: 33.987,
+              longitude: -118.47
+            }
+          }
+        },
+        2: {
+          title: "Note 2",
+          body: "Body 2",
+          id: 2,
+          location: {
+            coords: {
+              latitude: 33.986,
+              longitude: -118.46
+            }
+          }
+        }
       }
     };
     this.loadNotes();
+    this.trackLocation();
+  }
+
+  componentWillUnmount(){
+    navigator.geolocation.clearWatch(this.watchID);
+  }
+
+  trackLocation(){
+    navigator.geolocation.getCurrentPosition(
+      (initialPosition) => this.setState({initialPosition}),
+      (error) => alert(error.message)
+    );
+
+    this.watchID = navigator.geolocation.watchPosition(
+      (lastPosition) => {this.setState({lastPosition});}
+    );
   }
 
   async saveNotes(notes){
@@ -119,6 +181,11 @@ class ReactNotes extends Component {
 
   updateNote(note){
     let newNotes = Object.assign({}, this.state.notes);
+
+    if(!note.isSaved){
+      note.location = this.state.lastPosition;
+    }
+
     note.isSaved = true;
     newNotes[note.id] = note;
     this.setState({notes: newNotes});
@@ -157,6 +224,23 @@ class ReactNotes extends Component {
             onChangeNote={(note) => { this.updateNote(note)}}
           />
       );
+
+      case 'noteLocations':
+        return (
+          <NoteLocationScreen
+            notes={this.state.notes}
+            onSelectNote={(note) => navigator.push({
+              name: 'createNote',
+              passProps: {
+                note: {
+                  id: note.id,
+                  title: note.title,
+                  body: note.body,
+                }
+              }
+              })}
+          />
+          );
     }
 
   }
